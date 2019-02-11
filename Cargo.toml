@@ -1,0 +1,8 @@
+[package]
+name = "photonix"
+version = "0.1.0"
+authors = ["bsoptei <bsoptei@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+photonix_derive = { path = "../photonix_derive" }
