@@ -240,8 +240,6 @@ pub trait ModifyFifth<LevelOne, LevelTwo, LevelThree, LevelFour, LevelFive>
     }
 }
 
-
-
 #[macro_export]
 macro_rules! zoom_all {
     ($outer:ty => $first:ty => $second:ty) => {
