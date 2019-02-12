@@ -8,4 +8,4 @@ edition = "2018"
 repository = "https://github.com/bsoptei/photonix"
 
 [dependencies]
-photonix_derive = { path = "../photonix_derive" }
+photonix_derive = "0.1.0"
