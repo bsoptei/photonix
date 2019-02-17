@@ -32,10 +32,6 @@ pub trait ReverseGet<Value> {
     fn reverse_get(value: Value) -> Self;
 }
 
-pub trait ExtractFocus<Value> {
-    fn extract(self) -> Value;
-}
-
 pub trait GetSecond<LevelOne, LevelTwo>
     where
         LevelOne: Get<LevelTwo>,
