@@ -2,7 +2,7 @@
 name = "photonix"
 version = "0.1.0"
 authors = ["bsoptei <bsoptei@gmail.com>"]
-description = "Optics traits with the functionality of lenses."
+description = "Solutions for functional optics."
 license = "MIT"
 edition = "2018"
 repository = "https://github.com/bsoptei/photonix"

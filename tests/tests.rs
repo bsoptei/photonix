@@ -7,38 +7,15 @@ mod tests {
         fmt::Debug,
     };
 
-    #[derive(Debug, Get, GetRef, Set, Modify, PartialEq)]
-    pub struct Employee { pub name: String, pub company: Company }
-
-    #[derive(Debug, Get, GetRef, Set, Modify, PartialEq)]
-    pub struct Company { pub name: String, pub address: Address }
-
-    #[derive(Debug, Get, GetRef, Set, Modify, PartialEq)]
-    pub struct Address { pub city: String, pub street: Street }
-
-    #[derive(Debug, Get, GetRef, Set, Modify, PartialEq)]
-    pub struct Street { pub number: u16, pub name: String }
-
-    zoom_all![Employee => Company => Address];
-    zoom_all![Employee => Company => String];
-    zoom_all![Employee => Company => Address => String];
-    zoom_all![Employee => Company => Address => Street => String];
-    zoom_all![Employee => Company => Address => Street => u16];
-
-    #[allow(dead_code)]
-    #[derive(Debug, GetOption, Set, Modify, PartialEq)]
-    enum User {
-        Admin,
-        Employee(Employee),
+    #[derive(Debug, GetRef, Set, PartialEq)]
+    pub struct Person {
+        pub name: String,
+        pub age: u8,
     }
 
-    impl ReverseGet<Employee> for User {
-        fn reverse_get(value: Employee) -> Self {
-            User::Employee(value)
-        }
+    fn john() -> Person {
+        Person { name: String::from("john"), age: 42 }
     }
-
-    zoom![User => Employee => Company => Address => Street => u16];
 
     #[allow(dead_code)]
     #[derive(Debug, GetOption, Set, Modify, SetOption, ModifyOption, PartialEq)]
@@ -65,120 +42,29 @@ mod tests {
         String::from("hello")
     }
 
-    fn inc(n: u16) -> u16 {
-        n + 1
-    }
-
     fn div_by_five_point_two(n: f64) -> f64 {
         n / 5.2
     }
 
-    fn john() -> Employee {
-        Employee {
-            name: String::from("john"),
-            company: awesome_inc(),
-        }
-    }
-
-    fn awesome_inc() -> Company {
-        Company {
-            name: String::from("awesome inc"),
-            address: ln_high_street(),
-        }
-    }
-
-    fn ln_high_street() -> Address {
-        Address {
-            city: String::from("london"),
-            street: high_street_23(),
-        }
-    }
-
-    fn high_street_23() -> Street {
-        Street {
-            number: 23,
-            name: String::from("high street"),
-        }
-    }
-
-    #[test]
-    fn getters() {
-        let johns_name: String = john().get();
-
-        assert_eq!(
-            "john",
-            johns_name.as_str()
-        );
-
-        let johns_company_name: String = john().get_second();
-
-        assert_eq!(
-            "awesome inc",
-            johns_company_name.as_str()
-        );
-
-        assert_eq!(
-            "london",
-            john().get_third().as_str()
-        );
-
-        let street_name: String = john().get_fourth();
-
-        assert_eq!(
-            "high street",
-            street_name.as_str()
-        );
-
-        let john2 = john();
-
-        let johns_name2: &String = john2.get_ref();
-
-        assert_eq!(
-            "john",
-            johns_name2.as_str()
-        );
-
-        let johns_company_name2: &String = john2.get_ref_second();
-
-        assert_eq!(
-            "awesome inc",
-            johns_company_name2.as_str()
-        );
-
-        assert_eq!(
-            "london",
-            john2.get_ref_third().as_str()
-        );
-
-        let street_name2: &String = john2.get_ref_fourth();
-
-        assert_eq!(
-            "high street",
-            street_name2.as_str()
-        );
-    }
-
     #[test]
     fn get_option() {
+        let json_pi = || Json::JNum(3.14);
+        let v1: Option<f64> = json_pi().get_option();
+        let v2: Option<String> = json_pi().get_option();
+
         assert_eq!(
-            Some(john()),
-            User::Employee(john()).get_option()
+            Some(3.14),
+            v1
         );
 
         assert_eq!(
             None,
-            User::Admin.get_option()
+            v2
         );
     }
 
     #[test]
     fn setters() {
-        let john_new_address = User::Employee(john()).set_fifth(42);
-        assert_eq!(
-            Some(42),
-            john_new_address.get_option().map(|employee| employee.get_fourth())
-        );
-
         assert_eq!(
             Json::JNum(0.1),
             Json::JNum(0.0).set(0.1)
@@ -205,13 +91,6 @@ mod tests {
 
     #[test]
     fn modifiers() {
-        let john_new_address = john().modify_fourth(inc);
-
-        assert_eq!(
-            24u16,
-            john_new_address.get_fourth()
-        );
-
         assert_eq!(
             Json::JNum(10.0),
             Json::JNum(52.0).modify(div_by_five_point_two)
@@ -220,12 +99,6 @@ mod tests {
         assert_eq!(
             Json::JNull,
             Json::JNull.modify(div_by_five_point_two)
-        );
-
-        let john_new_address = User::Employee(john()).modify_fifth(|num| num + 19);
-        assert_eq!(
-            Some(42),
-            john_new_address.get_option().map(|employee| employee.get_fourth())
         );
     }
 
@@ -288,7 +161,7 @@ mod tests {
     fn lens_laws() {
         lens_law1(john, String::from("joe"));
         lens_law2(john, String::from("joe"), String::from("mark"));
-        lens_law3::<Employee, String>(john);
+        lens_law3::<Person, String>(john);
     }
 
     pub fn round_trip<Lens, Value>(lens: Lens) -> bool
