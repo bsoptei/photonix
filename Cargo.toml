@@ -1,6 +1,6 @@
 [package]
 name = "photonix"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["bsoptei <bsoptei@gmail.com>"]
 description = "Solutions for functional optics."
 license = "MIT"
@@ -8,4 +8,4 @@ edition = "2018"
 repository = "https://github.com/bsoptei/photonix"
 
 [dependencies]
-photonix_derive = "0.1.0"
+photonix_derive = "0.1.1"
