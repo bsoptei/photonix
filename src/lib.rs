@@ -9,7 +9,7 @@
 //! The real power of **photonix**, however, lies in its metaprogramming  features. The crate comes with auto-derives ([`photonix_derive`]) for most of the base traits it defines. The implementations of the auto-derives avoid cloning data by default. Furthermore, the [`zoom!`] and [`zoom_all!`] macros can help you get the implementation of multiple composite traits in a concise, straightforward, and readable way.
 //!
 //! [`composites`]: focus/composites/index.html
-//! [`photonix_derive`]: https://docs.rs/photonix_derive/0.1.0/photonix_derive/
+//! [`photonix_derive`]: https://docs.rs/photonix_derive/0.1.1/photonix_derive/
 //! [`zoom!`]: macro.zoom.html
 //! [`zoom_all!`]: macro.zoom_all.html
 //!
