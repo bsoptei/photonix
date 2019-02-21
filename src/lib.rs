@@ -83,7 +83,7 @@
 /// Type classes for getters and setters.
 pub mod focus;
 
-/// Relevant optics type class instances for common types.
+/// Relevant optics type class instances for common types (currently for `Option` only).
 pub mod implementations;
 
 pub use focus::{

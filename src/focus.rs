@@ -1,5 +1,9 @@
 /// Returns the target field of a container (struct) by value, consumes the container (unless it implements `Copy`).
 ///
+/// Auto-derive creates the implementation for all fields, works for structs (both with named and unnamed fields) if
+/// - all fields have concrete types,
+/// - all field types are different.
+///
 /// # Examples
 ///```
 /// # use photonix::*;
@@ -9,9 +13,13 @@
 ///     pub age: u8,
 /// }
 ///
-/// let joe = Person { name: String::from("Joe"), age: 42 };
+/// let joe = || Person { name: String::from("Joe"), age: 42 };
 ///
-/// assert_eq!(42u8, joe.get());
+/// assert_eq!(42u8, joe().get());
+///
+/// let joe_name: String = joe().get();
+///
+/// assert_eq!("Joe", joe_name.as_str());
 ///
 ///```
 ///
@@ -20,6 +28,10 @@ pub trait Get<Value> {
 }
 
 /// Returns the target field of a container (struct) by reference, keeps the container.
+///
+/// Auto-derive creates the implementation for all fields, works for structs (both with named and unnamed fields) if
+/// - all fields have concrete types,
+/// - all field types are different.
 ///
 /// # Examples
 ///```
@@ -46,7 +58,11 @@ pub trait GetRef<Value> {
 
 /// Updates the field of a container (struct/enum) with the provided value. Consumes the original container (unless it implements `Copy`), returns the updated one.
 ///
-///If you are using the derive macro, and the actual enum variant happens to be different than the target variant, the original version is returned.
+/// Auto-derive creates the implementation for all fields in structs and enum variants, works for structs and enums (both with named and unnamed fields) if
+/// - all fields have concrete types,
+/// - all field types are different.
+///
+///If you are using the derive macro, and the actual enum variant happens to be different from the target variant, it returns the original version (see example).
 ///
 /// # Examples
 ///```
@@ -90,7 +106,11 @@ pub trait Set<Value> {
 
 /// Updates the field of a container (struct/enum) by applying the provided function on the target value. Consumes the original container (unless it implements `Copy`), returns the updated one.
 ///
-/// If you are using the derive macro, and the actual enum variant happens to be different than the target variant, the original version is returned.
+/// Auto-derive creates the implementation for all fields in structs and enum variants, works for structs and enums (both with named and unnamed fields) if
+/// - all fields have concrete types,
+/// - all field types are different.
+///
+/// If you are using the derive macro, and the actual enum variant happens to be different from the target variant, it returns the original version (see example).
 ///
 /// # Examples
 ///
@@ -133,7 +153,13 @@ pub trait Modify<Value> {
     fn modify(self, f: impl FnOnce(Value) -> Value) -> Self;
 }
 
-/// Returns the target field of a container (enum) by value as an `Option`, consumes the container (unless it implements `Copy`). If the actual enum variant is different than the target variant, it returns `None`.
+/// Returns the target field of a container (enum) by value as an `Option`, consumes the container (unless it implements `Copy`).
+///
+/// Auto-derive creates the implementation for all fields in enum variants, works for enums (both with named and unnamed fields) if
+/// - all fields have concrete types,
+/// - all field types are different.
+///
+/// If you're using the derive macro, and the actual enum variant is different from the target variant, it returns `None` (see example).
 ///
 /// # Examples
 ///
@@ -154,13 +180,25 @@ pub trait Modify<Value> {
 /// let unsigned_value: Option<u32> = d().get_option();
 ///
 /// assert_eq!(None, unsigned_value);
+///
+/// let d2 = Deviation::Unsigned(10);
+///
+/// let unsigned_value2: Option<u32> = d2.get_option();
+///
+/// assert_eq!(Some(10), unsigned_value2);
 ///```
 ///
 pub trait GetOption<Value> {
     fn get_option(self) -> Option<Value>;
 }
 
-/// Updates the field of a container (enum) with the provided value. Consumes the original container (unless it implements `Copy`), returns the updated one wrapped in an `Option`. If the actual enum variant happens to be different than the target variant, `None` is returned.
+/// Updates the field of a container (enum) with the provided value. Consumes the original container (unless it implements `Copy`), returns the updated one wrapped in an `Option`.
+///
+/// Auto-derive creates the implementation for all fields in enum variants, works for enums (both with named and unnamed fields) if
+/// - all fields have concrete types,
+/// - all field types are different.
+///
+/// If you are using the derive macro, and the actual enum variant happens to be different from the target variant, it returns `None` (see example).
 ///
 /// # Examples
 ///```
@@ -188,7 +226,14 @@ pub trait SetOption<Value>
     fn set_option(self, new_value: Value) -> Option<Self>;
 }
 
-/// Updates the field of a container (enum) by applying the provided function on the target value. Consumes the original container (unless it implements `Copy`), returns the updated one wrapped in an `Option`. If the actual enum variant happens to be different than the target variant, `None` is returned.
+/// Updates the field of a container (enum) by applying the provided function on the target value. Consumes the original container (unless it implements `Copy`), returns the updated one wrapped in an `Option`.
+///
+/// Auto-derive creates the implementation for all fields in enum variants, works for enums (both with named and unnamed fields) if
+/// - all fields have concrete types,
+/// - all field types are different.
+///
+/// If you are using the derive macro, and the actual enum variant happens to be different from the target variant, it returns `None` (see example).
+///
 /// # Examples
 ///```
 /// # use photonix::*;
@@ -217,6 +262,7 @@ pub trait ModifyOption<Value>
 /// Constructs the relevant enum variant based on the input.
 ///
 /// This trait does not have a corresponding auto-derive macro.
+///
 /// # Examples
 ///```
 /// # use photonix::*;
@@ -264,6 +310,8 @@ pub mod composites {
     ///
     /// pub struct Address(String);
     ///
+    /// //             Level 1   Level 2    Parent type
+    /// //               |          |           |
     /// impl GetSecond<Company, String> for Employee {}
     ///
     /// let john_doe = Employee {
@@ -1061,9 +1109,10 @@ pub mod composites {
 }
 
 /// Auto-implements different [`composites`] of getters, setters, and modifiers.
-/// The requirement is that the elements in the chain should implement [`Get`], [`GetRef`], [`Modify`], and [`Set`] for the target type at the next level (see definitions of [`composites`] for details).
 ///
-/// Since [`Get`] and [`GetRef`] are traits for structs, this macro is recommended for use with structs.
+/// The requirement is that the elements should have an implementation of [`Get`], [`GetRef`], [`Modify`], and [`Set`] with the target type at the next level (see definitions of [`composites`] for details).
+///
+/// Since [`Get`] and [`GetRef`] are traits for structs, this macro is recommended to use with structs.
 ///
 /// [`Get`]: focus/trait.Get.html
 /// [`GetRef`]: focus/trait.GetRef.html
@@ -1080,6 +1129,7 @@ pub mod composites {
 /// pub struct Company { pub name: String, pub address: Address }
 /// #[derive(Get, GetRef, Set, Modify)]
 /// pub struct Address { pub city: String }
+///
 /// let john_doe = Employee {
 ///     name: String::from("John Doe"),
 ///     company: Company {
@@ -1138,9 +1188,10 @@ macro_rules! zoom_all {
 }
 
 /// Auto-implements [`composites`] of setters and modifiers.
-/// The requirement is that the elements in the chain should implement [`Modify`] and [`Set`] for the target type at the next level (see definitions of [`composites`] for details).
 ///
-/// You can use this macro for both structs and enums.
+/// The requirement is that the elements should have an implementation of [`Modify`] and [`Set`] with the target type at the next level (see definitions of [`composites`] for details).
+///
+/// You can use this macro with both structs and enums.
 ///
 /// [`Modify`]: focus/trait.Modify.html
 /// [`Set`]: focus/trait.Set.html
